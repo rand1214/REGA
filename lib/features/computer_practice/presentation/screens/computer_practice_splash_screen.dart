@@ -83,8 +83,11 @@ class _ComputerPracticeSplashScreenState extends State<ComputerPracticeSplashScr
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () async {
-                      // Close dialog first
-                      Navigator.of(context).pop();
+                      // Get navigator before closing dialog
+                      final navigator = Navigator.of(context);
+                      
+                      // Close dialog
+                      navigator.pop();
                       
                       // Set landscape orientation
                       await SystemChrome.setPreferredOrientations([
@@ -96,14 +99,11 @@ class _ComputerPracticeSplashScreenState extends State<ComputerPracticeSplashScr
                       await Future.delayed(const Duration(milliseconds: 400));
                       
                       // Navigate to computer practice screen
-                      if (context.mounted) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ComputerPracticeScreen(),
-                          ),
-                        );
-                      }
+                      navigator.pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const ComputerPracticeScreen(),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
