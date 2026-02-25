@@ -83,15 +83,20 @@ class _ComputerPracticeSplashScreenState extends State<ComputerPracticeSplashScr
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () async {
-                      // Set landscape orientation before navigating
+                      // Close dialog first
+                      Navigator.of(context).pop();
+                      
+                      // Set landscape orientation
                       await SystemChrome.setPreferredOrientations([
                         DeviceOrientation.landscapeRight,
                         DeviceOrientation.landscapeLeft,
                       ]);
-                      // Longer delay to ensure orientation change completes
-                      await Future.delayed(const Duration(milliseconds: 500));
+                      
+                      // Wait for orientation to settle
+                      await Future.delayed(const Duration(milliseconds: 400));
+                      
+                      // Navigate to computer practice screen
                       if (context.mounted) {
-                        Navigator.of(context).pop();
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
