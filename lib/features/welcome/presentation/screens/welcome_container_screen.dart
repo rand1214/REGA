@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'welcomer_1_screen.dart';
 import 'welcomer_2_screen.dart';
 import 'welcomer_3_screen.dart';
@@ -13,6 +14,15 @@ class WelcomeContainerScreen extends StatefulWidget {
 class _WelcomeContainerScreenState extends State<WelcomeContainerScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Lock to portrait up
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+  }
 
   @override
   void dispose() {

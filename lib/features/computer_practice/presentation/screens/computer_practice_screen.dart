@@ -219,21 +219,36 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
     });
   }
 
+  bool _isOrientationReady = false;
+
   @override
   void initState() {
     super.initState();
-    // Force landscape orientation immediately and strongly
+    // Lock to landscape orientation
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
-    ]);
+    ]).then((_) {
+      // Wait longer for orientation to fully apply and UI to rebuild
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          setState(() {
+            _isOrientationReady = true;
+          });
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    // Reset to all orientations when leaving
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
     ]);
     super.dispose();
   }
@@ -421,18 +436,22 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Show loading screen until orientation is ready
+    if (!_isOrientationReady) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF1F1F1),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
           // Cancel timer
           _timer?.cancel();
-          // Set orientation back to portrait
-          await SystemChrome.setPreferredOrientations([
-            DeviceOrientation.portraitUp,
-          ]);
-          // Wait for orientation change
-          await Future.delayed(const Duration(milliseconds: 300));
           // Then pop
           if (context.mounted) {
             Navigator.of(context).pop();
@@ -1008,13 +1027,7 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
                       onPressed: () async {
                         // Cancel timer first
                         _timer?.cancel();
-                        // Set orientation back to portrait first
-                        await SystemChrome.setPreferredOrientations([
-                          DeviceOrientation.portraitUp,
-                        ]);
-                        // Wait a bit for orientation to change
-                        await Future.delayed(const Duration(milliseconds: 300));
-                        // Then pop to go back to previous screen
+                        // Pop to go back to previous screen
                         if (context.mounted) {
                           Navigator.of(context).pop();
                         }
