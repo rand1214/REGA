@@ -12,6 +12,24 @@ class AppRouter {
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
+    debugLogDiagnostics: true,
+    errorBuilder: (context, state) => Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              'Error: ${state.error}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    ),
     routes: [
       GoRoute(
         path: '/',
