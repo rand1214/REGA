@@ -8,35 +8,41 @@ class QuizScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const TopBar(
-            kurdishName: "ئازاد محەمەد",
-          ),
-          const QuizDescriptionContainer(
-            description: "کلیک لە تاقیکردنەوە بکە و بەشەکان هەڵبژێرە و دەست بە تاقیکردنەوە بکە",
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: QuizButton(),
+    return Column(
+      children: [
+        const TopBar(
+          kurdishName: "ئازاد محەمەد",
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const QuizDescriptionContainer(
+                  description: "کلیک لە تاقیکردنەوە بکە و بەشەکان هەڵبژێرە و دەست بە تاقیکردنەوە بکە",
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: QuizButton(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: QuizHistoryTable(),
+                ),
+                const SizedBox(height: 20),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: ComputerPracticeWidget(),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: QuizHistoryTable(),
-          ),
-          const SizedBox(height: 20),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: ComputerPracticeWidget(),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
