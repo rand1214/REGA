@@ -18,6 +18,11 @@ class _ComputerPracticeSplashScreenState extends State<ComputerPracticeSplashScr
   void initState() {
     super.initState();
     
+    // Force portrait orientation when splash screen loads
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    
     _controller = AnimationController(
       duration: const Duration(seconds: 5),
       vsync: this,
