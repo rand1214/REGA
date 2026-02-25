@@ -421,12 +421,6 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Ensure landscape orientation on every build
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
-    
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
