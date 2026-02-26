@@ -44,7 +44,7 @@ class _ChapterSelectionDialogState extends State<ChapterSelectionDialog> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final textFontSize = screenWidth < 375 ? 8.0 : 9.0;
+    final textFontSize = screenWidth < 375 ? 7.5 : 8.5;
     
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -78,7 +78,7 @@ class _ChapterSelectionDialogState extends State<ChapterSelectionDialog> {
                   crossAxisCount: 4,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 0.75,
+                  childAspectRatio: 0.65,
                 ),
                 itemCount: 12,
                 itemBuilder: (context, index) {
@@ -133,19 +133,23 @@ class _ChapterSelectionDialogState extends State<ChapterSelectionDialog> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Flexible(
-                          child: Text(
-                            chapterTitles[index],
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: 'PeshangDes',
-                              fontSize: textFontSize,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                              height: 1.2,
+                        const SizedBox(height: 6),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            child: Text(
+                              chapterTitles[index],
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
+                              style: TextStyle(
+                                fontFamily: 'PeshangDes',
+                                fontSize: textFontSize,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                                height: 1.3,
+                              ),
                             ),
                           ),
                         ),

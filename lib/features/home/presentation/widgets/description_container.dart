@@ -10,6 +10,9 @@ class DescriptionContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final fontSize = (screenWidth * 0.04).clamp(14.0, 16.0);
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
       child: Container(
@@ -31,7 +34,7 @@ class DescriptionContainer extends StatelessWidget {
             GestureDetector(
               onTap: () {},
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.black,
                   borderRadius: BorderRadius.circular(12),
@@ -40,39 +43,40 @@ class DescriptionContainer extends StatelessWidget {
                   'کڕین',
                   style: TextStyle(
                     fontFamily: 'PeshangDes',
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 description,
                 textAlign: TextAlign.right,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+                softWrap: true,
                 style: TextStyle(
                   fontFamily: 'PeshangDes',
-                  fontSize: 16,
+                  fontSize: fontSize,
                   fontWeight: FontWeight.normal,
-                  height: 1.5,
+                  height: 1.4,
                   color: Colors.black.withValues(alpha: 0.7),
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Container(
-              width: 50,
-              height: 50,
+              width: 45,
+              height: 45,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.grey.shade200,
               ),
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 child: Image.asset(
                   'assets/icons/unlock.png',
                   fit: BoxFit.contain,

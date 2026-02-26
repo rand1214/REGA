@@ -540,102 +540,117 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
                           LayoutBuilder(
                             builder: (context, constraints) {
                               final availableWidth = constraints.maxWidth;
+                              final availableHeight = constraints.maxHeight;
                               
                               return Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: Column(
                                   children: [
-                                    // Top row: Timer on left, Question title + Image on right
-                                    Expanded(
+                                    // Top section: Timer + Grid + Image (70% of height)
+                                    Flexible(
+                                      flex: 7,
                                       child: Row(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           // Left column: Timer + Question Grid
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              // Timer countdown
-                                              Container(
-                                                width: 70,
-                                                height: 70,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Colors.grey.shade800,
-                                                ),
-                                                child: Stack(
-                                                  children: [
-                                                    Center(
-                                                      child: SizedBox(
-                                                        width: 70,
-                                                        height: 70,
-                                                        child: CircularProgressIndicator(
-                                                          value: timerSeconds / 60,
-                                                          strokeWidth: 5,
-                                                          backgroundColor: Colors.orange,
-                                                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 16),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                // Timer countdown
+                                                Container(
+                                                  width: 70,
+                                                  height: 70,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: Colors.grey.shade800,
+                                                  ),
+                                                  child: Stack(
+                                                    children: [
+                                                      Center(
+                                                        child: SizedBox(
+                                                          width: 70,
+                                                          height: 70,
+                                                          child: CircularProgressIndicator(
+                                                            value: timerSeconds / 60,
+                                                            strokeWidth: 5,
+                                                            backgroundColor: Colors.orange,
+                                                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                    Center(
-                                                      child: Text(
-                                                        '$timerSeconds',
-                                                        style: const TextStyle(
-                                                          fontSize: 28,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: Colors.white,
+                                                      Center(
+                                                        child: Text(
+                                                          '$timerSeconds',
+                                                          style: const TextStyle(
+                                                            fontSize: 28,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              // 25 Question circles (5x5 grid)
-                                              SizedBox(
-                                                width: 140,
-                                                child: Column(
-                                                  children: List.generate(5, (row) {
-                                                    return Padding(
-                                                      padding: const EdgeInsets.only(bottom: 3),
-                                                      child: Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                        children: List.generate(5, (col) {
-                                                          final questionNumber = row * 5 + col + 1;
-                                                          final isAnswered = questionNumber < currentQuestion;
-                                                          final isCurrent = questionNumber == currentQuestion;
-                                                          
-                                                          return Container(
-                                                            width: 24,
-                                                            height: 24,
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.circle,
-                                                              color: isCurrent 
-                                                                  ? Colors.red 
-                                                                  : isAnswered 
-                                                                      ? Colors.blue.shade700 
-                                                                      : Colors.blue.shade200,
-                                                            ),
-                                                            child: Center(
-                                                              child: Text(
-                                                                questionNumber.toString().padLeft(2, '0'),
-                                                                style: const TextStyle(
-                                                                  fontSize: 8,
-                                                                  fontWeight: FontWeight.bold,
-                                                                  color: Colors.white,
-                                                                ),
-                                                              ),
+                                                const SizedBox(height: 8),
+                                                // 25 Question circles (5x5 grid) with max height constraint
+                                                ConstrainedBox(
+                                                  constraints: BoxConstraints(
+                                                    maxHeight: availableHeight * 0.5,
+                                                  ),
+                                                  child: SingleChildScrollView(
+                                                    physics: const ClampingScrollPhysics(),
+                                                    child: SizedBox(
+                                                      width: 140,
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: List.generate(5, (row) {
+                                                          return Padding(
+                                                            padding: const EdgeInsets.only(bottom: 3),
+                                                            child: Row(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                              children: List.generate(5, (col) {
+                                                                final questionNumber = row * 5 + col + 1;
+                                                                final isAnswered = questionNumber < currentQuestion;
+                                                                final isCurrent = questionNumber == currentQuestion;
+                                                                
+                                                                return Container(
+                                                                  width: 24,
+                                                                  height: 24,
+                                                                  decoration: BoxDecoration(
+                                                                    shape: BoxShape.circle,
+                                                                    color: isCurrent 
+                                                                        ? Colors.red 
+                                                                        : isAnswered 
+                                                                            ? Colors.blue.shade700 
+                                                                            : Colors.blue.shade200,
+                                                                  ),
+                                                                  child: Center(
+                                                                    child: Text(
+                                                                      questionNumber.toString().padLeft(2, '0'),
+                                                                      style: const TextStyle(
+                                                                        fontSize: 8,
+                                                                        fontWeight: FontWeight.bold,
+                                                                        color: Colors.white,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              }),
                                                             ),
                                                           );
                                                         }),
                                                       ),
-                                                    );
-                                                  }),
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                           const SizedBox(width: 12),
-                                          // Right column: Question title + Image (same height as grid)
+                                          // Right column: Question title + Image
                                           Expanded(
                                             child: AnimatedOpacity(
                                               opacity: _isTransitioning ? 0.0 : 1.0,
@@ -665,7 +680,7 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
                                                     ),
                                                   ),
                                                   const SizedBox(height: 8),
-                                                  // Image container - takes remaining space to match grid height
+                                                  // Image container - takes remaining space
                                                   Expanded(
                                                     child: Container(
                                                       decoration: BoxDecoration(
@@ -698,20 +713,24 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
-                                    // Answer options A, B, C - aligned with left edge of grid
-                                    AnimatedOpacity(
-                                      opacity: _isTransitioning ? 0.0 : 1.0,
-                                      duration: const Duration(milliseconds: 200),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        children: [
-                                          _buildAnswerOption('A', _answerAKey, customText: getAnswerText('a')),
-                                          const SizedBox(height: 4),
-                                          _buildAnswerOption('B', _answerBKey, customText: getAnswerText('b')),
-                                          const SizedBox(height: 4),
-                                          _buildAnswerOption('C', _answerCKey, customText: getAnswerText('c')),
-                                        ],
+                                    const SizedBox(height: 8),
+                                    // Answer options A, B, C (30% of height)
+                                    Flexible(
+                                      flex: 3,
+                                      child: AnimatedOpacity(
+                                        opacity: _isTransitioning ? 0.0 : 1.0,
+                                        duration: const Duration(milliseconds: 200),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                                          children: [
+                                            _buildAnswerOption('A', _answerAKey, customText: getAnswerText('a')),
+                                            const SizedBox(height: 4),
+                                            _buildAnswerOption('B', _answerBKey, customText: getAnswerText('b')),
+                                            const SizedBox(height: 4),
+                                            _buildAnswerOption('C', _answerCKey, customText: getAnswerText('c')),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -756,124 +775,139 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
                             ),
                           )
                         else if (!showUserName)
-                          // Empty screen with search field and numpad
-                          Stack(
-                            children: [
-                              // Code label at bottom right
-                              Positioned(
-                                bottom: 15,
-                                right: 15,
-                                child: Text(
-                                  'کۆد = ${randomCode.split('').map((d) => kurdishDigits[d] ?? d).join()}',
-                                  style: const TextStyle(
-                                    fontFamily: 'PeshangDes',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                          // Code entry screen with keyboard-aware layout
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+                              final availableHeight = constraints.maxHeight - keyboardHeight;
+                              
+                              return SingleChildScrollView(
+                                physics: const ClampingScrollPhysics(),
+                                padding: EdgeInsets.only(bottom: keyboardHeight),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: availableHeight,
                                   ),
-                                ),
-                              ),
-                              // Search field and numpad in center
-                              Align(
-                                alignment: Alignment.topCenter,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 15),
                                   child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Container(
-                                        width: 280,
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          border: Border.all(color: Colors.grey.shade400, width: 2),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          searchText,
-                                          textAlign: TextAlign.right,
-                                          style: const TextStyle(
-                                            fontFamily: 'PeshangDes',
-                                            fontSize: 14,
-                                            color: Colors.black87,
+                                      // Top: Code label
+                                      Padding(
+                                        padding: const EdgeInsets.all(15),
+                                        child: Align(
+                                          alignment: Alignment.topRight,
+                                          child: Text(
+                                            'کۆد = ${randomCode.split('').map((d) => kurdishDigits[d] ?? d).join()}',
+                                            style: const TextStyle(
+                                              fontFamily: 'PeshangDes',
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    key: _searchButtonKey,
-                                    width: 180,
-                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        'گەڕان',
-                                        style: TextStyle(
-                                          fontFamily: 'PeshangDes',
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
+                                      // Center: Search field + button + numpad
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // Search field
+                                          Container(
+                                            width: 280,
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              border: Border.all(color: Colors.grey.shade400, width: 2),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              searchText,
+                                              textAlign: TextAlign.right,
+                                              style: const TextStyle(
+                                                fontFamily: 'PeshangDes',
+                                                fontSize: 14,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          // Search button
+                                          Container(
+                                            key: _searchButtonKey,
+                                            width: 180,
+                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: const Center(
+                                              child: Text(
+                                                'گەڕان',
+                                                style: TextStyle(
+                                                  fontFamily: 'PeshangDes',
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          // Numpad
+                                          SizedBox(
+                                            width: 220,
+                                            child: Column(
+                                              children: [
+                                                // Row 1: 1 2 3
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: [
+                                                    _buildNumpadButton('1', buttonKey: _numpadKeys[0]),
+                                                    _buildNumpadButton('2', buttonKey: _numpadKeys[1]),
+                                                    _buildNumpadButton('3', buttonKey: _numpadKeys[2]),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 6),
+                                                // Row 2: 4 5 6
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: [
+                                                    _buildNumpadButton('4', buttonKey: _numpadKeys[3]),
+                                                    _buildNumpadButton('5', buttonKey: _numpadKeys[4]),
+                                                    _buildNumpadButton('6', buttonKey: _numpadKeys[5]),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 6),
+                                                // Row 3: 7 8 9
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: [
+                                                    _buildNumpadButton('7', buttonKey: _numpadKeys[6]),
+                                                    _buildNumpadButton('8', buttonKey: _numpadKeys[7]),
+                                                    _buildNumpadButton('9', buttonKey: _numpadKeys[8]),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 6),
+                                                // Row 4: C 0 →
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: [
+                                                    _buildNumpadButton('C', isSpecial: true, buttonKey: _numpadKeys[9]),
+                                                    _buildNumpadButton('0', buttonKey: _numpadKeys[10]),
+                                                    _buildNumpadButton('→', isSpecial: true, buttonKey: _numpadKeys[11]),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
+                                      const SizedBox(height: 20), // Bottom spacing
+                                    ],
                                   ),
-                                  const SizedBox(height: 12),
-                                  // Numpad
-                                  SizedBox(
-                                    width: 220,
-                                    child: Column(
-                                      children: [
-                                        // Row 1: 1 2 3
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            _buildNumpadButton('1', buttonKey: _numpadKeys[0]),
-                                            _buildNumpadButton('2', buttonKey: _numpadKeys[1]),
-                                            _buildNumpadButton('3', buttonKey: _numpadKeys[2]),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 6),
-                                        // Row 2: 4 5 6
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            _buildNumpadButton('4', buttonKey: _numpadKeys[3]),
-                                            _buildNumpadButton('5', buttonKey: _numpadKeys[4]),
-                                            _buildNumpadButton('6', buttonKey: _numpadKeys[5]),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 6),
-                                        // Row 3: 7 8 9
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            _buildNumpadButton('7', buttonKey: _numpadKeys[6]),
-                                            _buildNumpadButton('8', buttonKey: _numpadKeys[7]),
-                                            _buildNumpadButton('9', buttonKey: _numpadKeys[8]),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 6),
-                                        // Row 4: C 0 →
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            _buildNumpadButton('C', isSpecial: true, buttonKey: _numpadKeys[9]),
-                                            _buildNumpadButton('0', buttonKey: _numpadKeys[10]),
-                                            _buildNumpadButton('→', isSpecial: true, buttonKey: _numpadKeys[11]),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                            ],
+                                ),
+                              );
+                            },
                           )
                         else
                           // User name screen with numpad
