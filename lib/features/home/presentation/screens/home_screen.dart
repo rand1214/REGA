@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/home_content.dart';
-import '../../../quiz/presentation/screens/quiz_screen.dart';
+import '../../../quiz/presentation/screens/quiz_home_screen.dart';
 import '../../../book/presentation/screens/book_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 
@@ -21,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return const HomeContent();
       case 1:
-        return const QuizScreen();
+        return const QuizHomeScreen();
       case 2:
         return const BookScreen();
       case 3:

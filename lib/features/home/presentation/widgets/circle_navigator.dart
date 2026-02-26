@@ -14,6 +14,11 @@ class CircleNavigator extends StatefulWidget {
 
 class _CircleNavigatorState extends State<CircleNavigator> {
   int selectedIndex = 0;
+  final ScrollController _scrollController = ScrollController();
+  
+  // Item width: 70 (circle) + 12 (padding) = 82
+  static const double itemWidth = 82.0;
+  static const double horizontalPadding = 20.0;
 
   final List<Color> chapterColors = [
     const Color(0xFFB7D63E), // 1
@@ -42,8 +47,54 @@ class _CircleNavigatorState extends State<CircleNavigator> {
     'هەلسەنگاندنی\nمەترسییەکان',
     'تەندروستی شوفێر',
     'لێخوڕینی ژینگەپارێزان',
-    'هفریاکوزاری سەرەتایی',
+    'فریاگوزاری سەرەتایی',
   ];
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToIndex(int index) {
+    if (!_scrollController.hasClients) return;
+
+    // Get screen width to calculate center position
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    // Calculate the position of the selected item
+    // Since we're using RTL, we need to calculate from the right
+    final itemPosition = index * itemWidth;
+    
+    // Calculate the scroll offset to center the item
+    // Center position = item position - (screen width / 2) + (item width / 2)
+    final centerOffset = itemPosition - (screenWidth / 2) + (itemWidth / 2) + horizontalPadding;
+    
+    // Get max scroll extent
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    
+    // Clamp the offset to valid range (0 to maxScroll)
+    final targetOffset = centerOffset.clamp(0.0, maxScroll);
+    
+    // Animate to the target position
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onChapterTap(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+    
+    // Scroll to center the selected item
+    _scrollToIndex(index);
+    
+    // Notify parent
+    widget.onChapterSelected(index, chapterTitles[index]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,9 +103,10 @@ class _CircleNavigatorState extends State<CircleNavigator> {
       child: Directionality(
         textDirection: TextDirection.rtl,
         child: SingleChildScrollView(
+          controller: _scrollController,
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: Row(
             children: List.generate(
               12,
@@ -64,18 +116,13 @@ class _CircleNavigatorState extends State<CircleNavigator> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                        widget.onChapterSelected(index, chapterTitles[index]);
-                      },
+                      onTap: () => _onChapterTap(index),
                       child: Container(
                         width: 70,
                         height: 70,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white,
+                          color: const Color(0xFFF1F1F1),
                           border: Border.all(
                             color: selectedIndex == index ? Colors.black : Colors.grey.shade300,
                             width: selectedIndex == index ? 3 : 2,

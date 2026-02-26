@@ -13,6 +13,9 @@ class Welcomer3Screen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final descriptionFontSize = screenWidth < 375 ? 16.0 : (screenWidth < 400 ? 18.0 : 20.0);
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF1F1F1),
       body: SafeArea(
@@ -93,11 +96,11 @@ class Welcomer3Screen extends StatelessWidget {
                             ],
                           ),
                           child: Text(
-                            "دوای تەواوکردنی فێربوون و تاقیکردنەوەکان، ئێستا ئامادەیت بۆ هەنگاوی دوا. بە باوەڕ بە زانیاری و تواناکانت بچۆ بۆ تاقیکردنەوەی ڕاستەقینە و بێبەش مەبە لە وەرگرتنی مۆڵەتی شۆفێری. سەرکەوتن چاوەڕێت دەکات.",
+                            "دوای تەواوکردنی فێربوون و تاقیکردنەوەکان، ئێستا ئامادەیت بۆ هەنگاوی دوا. بە باوەڕ بە زانیاری و تواناکانت بچۆ بۆ تاقیکردنەوەی ڕاستەقینە و بێبەش مەبە لە وەرگرتنی مۆڵەتی شۆفێری. سەرکەوتن چاوەڕێت دەکات",
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               fontFamily: 'PeshangDes',
-                              fontSize: 20,
+                              fontSize: descriptionFontSize,
                               fontWeight: FontWeight.normal,
                               height: 1.6,
                               color: Colors.black.withValues(alpha: 0.7),

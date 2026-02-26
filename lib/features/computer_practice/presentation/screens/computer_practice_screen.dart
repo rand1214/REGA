@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class ComputerPracticeScreen extends StatefulWidget {
   const ComputerPracticeScreen({super.key});
@@ -24,6 +23,12 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
   String? selectedAnswer;
   Timer? _timer;
   bool _isTransitioning = false;
+  String randomCode = '12345';
+  
+  @override
+  void initState() {
+    super.initState();
+  }
   
   // Question data
   final Map<int, Map<String, String>> questionData = {
@@ -144,13 +149,32 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
     }
     // Check if cursor is over search button
     else if (_isCursorOverOption(_searchButtonKey)) {
-      if (!showUserName && searchText.isNotEmpty) {
-        setState(() {
-          // In a real app, this would fetch the name from database using the code
-          // For now, we'll use a sample Kurdish name
-          userName = 'ئازاد';
-          showUserName = true;
-        });
+      if (!showUserName) {
+        if (searchText.isNotEmpty) {
+          // Convert Kurdish digits back to English for comparison
+          String enteredCode = searchText;
+          kurdishDigits.forEach((english, kurdish) {
+            enteredCode = enteredCode.replaceAll(kurdish, english);
+          });
+          
+          // Check if entered code matches the random code
+          if (enteredCode == randomCode) {
+            setState(() {
+              // In a real app, this would fetch the name from database using the code
+              // For now, we'll use a sample Kurdish name
+              userName = 'ئازاد';
+              showUserName = true;
+            });
+          } else {
+            // Code doesn't match - in production, show error message to user
+          }
+        } else {
+          // For testing - proceed even without code
+          setState(() {
+            userName = 'ئازاد';
+            showUserName = true;
+          });
+        }
       }
     }
     // Check if cursor is over start button (دەستپێکردن)
@@ -197,21 +221,18 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         if (currentQuestion == 3) {
-          // After answering question 3, show empty screen
+          // After answering question 3, show emoji screen
           setState(() {
             showFinalEmptyScreen = true;
             _isTransitioning = false;
           });
           _timer?.cancel();
-        } else if (currentQuestion < 25) {
+        } else if (currentQuestion < 3) {
+          // Move to next question (only for questions 1 and 2)
           setState(() {
             currentQuestion++;
             selectedAnswer = null;
             timerSeconds = 1;
-            _isTransitioning = false;
-          });
-        } else {
-          setState(() {
             _isTransitioning = false;
           });
         }
@@ -219,37 +240,9 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
     });
   }
 
-  bool _isOrientationReady = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Lock to landscape orientation
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]).then((_) {
-      // Wait longer for orientation to fully apply and UI to rebuild
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          setState(() {
-            _isOrientationReady = true;
-          });
-        }
-      });
-    });
-  }
-
   @override
   void dispose() {
     _timer?.cancel();
-    // Reset to all orientations when leaving
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
     super.dispose();
   }
 
@@ -260,22 +253,27 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
       if (!mounted) return;
       setState(() {
         if (timerSeconds >= 60) {
-          // Move to next question after 60 seconds
-          timerSeconds = 1;
-          _isTransitioning = true;
-          if (currentQuestion < 25) {
+          // Time's up for current question
+          if (currentQuestion == 3) {
+            // After question 3 times out, show emoji screen
+            setState(() {
+              showFinalEmptyScreen = true;
+              _isTransitioning = false;
+            });
+            _timer?.cancel();
+          } else if (currentQuestion < 3) {
+            // Move to next question
+            timerSeconds = 1;
+            _isTransitioning = true;
             Future.delayed(const Duration(milliseconds: 200), () {
               if (mounted) {
                 setState(() {
                   currentQuestion++;
+                  selectedAnswer = null;
                   _isTransitioning = false;
                 });
               }
             });
-          } else {
-            // Stop timer after last question
-            _timer?.cancel();
-            _isTransitioning = false;
           }
         } else {
           timerSeconds++;
@@ -370,15 +368,17 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
     );
   }
 
-  Widget _buildAnswerOption(String letter, GlobalKey optionKey, {bool hideCircle = false, String? customText}) {
+  Widget _buildAnswerOption(String letter, GlobalKey optionKey, {bool hideCircle = false, String? customText, bool disableHover = false}) {
     // Only check hover state if the widget is mounted and has been rendered
     bool isHovered = false;
-    try {
-      if (mounted && optionKey.currentContext != null) {
-        isHovered = _isCursorOverOption(optionKey);
+    if (!disableHover) {
+      try {
+        if (mounted && optionKey.currentContext != null) {
+          isHovered = _isCursorOverOption(optionKey);
+        }
+      } catch (e) {
+        // Ignore errors during initial render
       }
-    } catch (e) {
-      // Ignore errors during initial render
     }
     
     final isSelected = selectedAnswer == letter;
@@ -388,21 +388,25 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Container(
-            width: 340,
-            height: 26,
-            decoration: BoxDecoration(
-              color: isHovered || isSelected ? Colors.blue : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade400, width: 2),
-            ),
-            child: Center(
-              child: Text(
-                customText ?? 'نموونەی وەڵام',
-                style: TextStyle(
-                  fontFamily: 'PeshangDes',
-                  fontSize: 12,
-                  color: isHovered || isSelected ? Colors.white : Colors.black87,
+          Expanded(
+            child: Container(
+              height: 28,
+              decoration: BoxDecoration(
+                color: isHovered || isSelected ? Colors.blue : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.grey.shade400, width: 2),
+              ),
+              child: Center(
+                child: Text(
+                  customText ?? 'نموونەی وەڵام',
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'PeshangDes',
+                    fontSize: 12,
+                    color: isHovered || isSelected ? Colors.white : Colors.black87,
+                  ),
                 ),
               ),
             ),
@@ -410,8 +414,8 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
           if (!hideCircle) ...[
             const SizedBox(width: 6),
             Container(
-              width: 26,
-              height: 26,
+              width: 24,
+              height: 24,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isHovered || isSelected ? Colors.blue : Colors.white,
@@ -421,7 +425,7 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
                 child: Text(
                   letter,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: isHovered || isSelected ? Colors.white : Colors.black,
                   ),
@@ -436,16 +440,6 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Show loading screen until orientation is ready
-    if (!_isOrientationReady) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF1F1F1),
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-    
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -461,11 +455,36 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
       child: Scaffold(
       backgroundColor: const Color(0xFFF1F1F1),
       body: SafeArea(
-        child: Row(
+        child: Column(
           children: [
-            // Left side - Monitor
+            // Back button at the top
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    // Cancel timer first
+                    _timer?.cancel();
+                    // Pop to go back to previous screen
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.all(12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    minimumSize: const Size(48, 48),
+                  ),
+                  child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                ),
+              ),
+            ),
+            // Top half - Monitor (50% height, 100% width)
             Expanded(
-              flex: 4,
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Container(
@@ -518,165 +537,187 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
                           )
                         // Empty screen after clicking دەستپێکردن
                         else if (showEmptyScreen)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 12, right: 12, top: 12),
-                            child: Stack(
-                              children: [
-                                // Timer and question circles in Column
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final availableWidth = constraints.maxWidth;
+                              
+                              return Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
                                   children: [
-                                    // Timer countdown
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(width: 30),
-                                        Container(
-                                          width: 80,
-                                          height: 80,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.grey.shade800,
-                                          ),
-                                          child: Stack(
+                                    // Top row: Timer on left, Question title + Image on right
+                                    Expanded(
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          // Left column: Timer + Question Grid
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Center(
-                                                child: SizedBox(
-                                                  width: 80,
-                                                  height: 80,
-                                                  child: CircularProgressIndicator(
-                                                    value: timerSeconds / 60,
-                                                    strokeWidth: 6,
-                                                    backgroundColor: Colors.orange,
-                                                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
-                                                  ),
+                                              // Timer countdown
+                                              Container(
+                                                width: 70,
+                                                height: 70,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Colors.grey.shade800,
                                                 ),
-                                              ),
-                                              Center(
-                                                child: Text(
-                                                  '$timerSeconds',
-                                                  style: const TextStyle(
-                                                    fontSize: 32,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
-                                    // 25 Question circles (5x5 grid)
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: SizedBox(
-                                        width: 150,
-                                        child: Column(
-                                          children: List.generate(5, (row) {
-                                            return Padding(
-                                              padding: const EdgeInsets.only(bottom: 3),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                children: List.generate(5, (col) {
-                                                  final questionNumber = row * 5 + col + 1;
-                                                  final isAnswered = questionNumber < currentQuestion;
-                                                  final isCurrent = questionNumber == currentQuestion;
-                                                  
-                                                  return Container(
-                                                    width: 26,
-                                                    height: 26,
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      color: isCurrent 
-                                                          ? Colors.red 
-                                                          : isAnswered 
-                                                              ? Colors.blue.shade700 
-                                                              : Colors.blue.shade200,
+                                                child: Stack(
+                                                  children: [
+                                                    Center(
+                                                      child: SizedBox(
+                                                        width: 70,
+                                                        height: 70,
+                                                        child: CircularProgressIndicator(
+                                                          value: timerSeconds / 60,
+                                                          strokeWidth: 5,
+                                                          backgroundColor: Colors.orange,
+                                                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
+                                                        ),
+                                                      ),
                                                     ),
-                                                    child: Center(
+                                                    Center(
                                                       child: Text(
-                                                        questionNumber.toString().padLeft(2, '0'),
+                                                        '$timerSeconds',
                                                         style: const TextStyle(
-                                                          fontSize: 9,
+                                                          fontSize: 28,
                                                           fontWeight: FontWeight.bold,
                                                           color: Colors.white,
                                                         ),
                                                       ),
                                                     ),
-                                                  );
-                                                }),
+                                                  ],
+                                                ),
                                               ),
-                                            );
-                                          }),
-                                        ),
+                                              const SizedBox(height: 8),
+                                              // 25 Question circles (5x5 grid)
+                                              SizedBox(
+                                                width: 140,
+                                                child: Column(
+                                                  children: List.generate(5, (row) {
+                                                    return Padding(
+                                                      padding: const EdgeInsets.only(bottom: 3),
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                        children: List.generate(5, (col) {
+                                                          final questionNumber = row * 5 + col + 1;
+                                                          final isAnswered = questionNumber < currentQuestion;
+                                                          final isCurrent = questionNumber == currentQuestion;
+                                                          
+                                                          return Container(
+                                                            width: 24,
+                                                            height: 24,
+                                                            decoration: BoxDecoration(
+                                                              shape: BoxShape.circle,
+                                                              color: isCurrent 
+                                                                  ? Colors.red 
+                                                                  : isAnswered 
+                                                                      ? Colors.blue.shade700 
+                                                                      : Colors.blue.shade200,
+                                                            ),
+                                                            child: Center(
+                                                              child: Text(
+                                                                questionNumber.toString().padLeft(2, '0'),
+                                                                style: const TextStyle(
+                                                                  fontSize: 8,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.white,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          );
+                                                        }),
+                                                      ),
+                                                    );
+                                                  }),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(width: 12),
+                                          // Right column: Question title + Image (same height as grid)
+                                          Expanded(
+                                            child: AnimatedOpacity(
+                                              opacity: _isTransitioning ? 0.0 : 1.0,
+                                              duration: const Duration(milliseconds: 200),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                children: [
+                                                  // Question title
+                                                  Container(
+                                                    key: _answerA2Key,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius: BorderRadius.circular(16),
+                                                      border: Border.all(color: Colors.grey.shade400, width: 2),
+                                                    ),
+                                                    child: Text(
+                                                      getQuestionText(),
+                                                      textAlign: TextAlign.center,
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontFamily: 'PeshangDes',
+                                                        fontSize: (availableWidth * 0.028).clamp(10.0, 13.0),
+                                                        color: Colors.black87,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  // Image container - takes remaining space to match grid height
+                                                  Expanded(
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius: BorderRadius.circular(12),
+                                                        border: Border.all(color: Colors.grey.shade400, width: 2),
+                                                      ),
+                                                      child: ClipRRect(
+                                                        borderRadius: BorderRadius.circular(10),
+                                                        child: Image.asset(
+                                                          'assets/images/computer-practice-q${currentQuestion.toString().padLeft(2, '0')}.png',
+                                                          fit: BoxFit.contain,
+                                                          errorBuilder: (context, error, stackTrace) {
+                                                            return const Center(
+                                                              child: Icon(
+                                                                Icons.image_outlined,
+                                                                size: 48,
+                                                                color: Colors.grey,
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // Answer options A, B, C - aligned with left edge of grid
+                                    AnimatedOpacity(
+                                      opacity: _isTransitioning ? 0.0 : 1.0,
+                                      duration: const Duration(milliseconds: 200),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: [
+                                          _buildAnswerOption('A', _answerAKey, customText: getAnswerText('a')),
+                                          const SizedBox(height: 4),
+                                          _buildAnswerOption('B', _answerBKey, customText: getAnswerText('b')),
+                                          const SizedBox(height: 4),
+                                          _buildAnswerOption('C', _answerCKey, customText: getAnswerText('c')),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                                // Answer option A2 positioned at top with fade animation
-                                Positioned(
-                                  right: 0,
-                                  top: 12,
-                                  child: AnimatedOpacity(
-                                    opacity: _isTransitioning ? 0.0 : 1.0,
-                                    duration: const Duration(milliseconds: 200),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        _buildAnswerOption('A2', _answerA2Key, hideCircle: true, customText: getQuestionText()),
-                                        const SizedBox(height: 8),
-                                        Container(
-                                          width: 340,
-                                          height: 140,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: Colors.grey.shade400, width: 2),
-                                          ),
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(10),
-                                            child: Image.asset(
-                                              'assets/images/computer-practice-q${currentQuestion.toString().padLeft(2, '0')}.png',
-                                              fit: BoxFit.contain,
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return const Center(
-                                                  child: Icon(
-                                                    Icons.image_outlined,
-                                                    size: 48,
-                                                    color: Colors.grey,
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                // Answer options A, B, C positioned below with fade animation
-                                Positioned(
-                                  right: 0,
-                                  top: 195,
-                                  child: AnimatedOpacity(
-                                    opacity: _isTransitioning ? 0.0 : 1.0,
-                                    duration: const Duration(milliseconds: 200),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        _buildAnswerOption('A', _answerAKey, customText: getAnswerText('a')),
-                                        const SizedBox(height: 2),
-                                        _buildAnswerOption('B', _answerBKey, customText: getAnswerText('b')),
-                                        const SizedBox(height: 2),
-                                        _buildAnswerOption('C', _answerCKey, customText: getAnswerText('c')),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              );
+                            },
                           )
                         // Language selection content
                         else if (showLanguageSelection)
@@ -718,15 +759,15 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
                           // Empty screen with search field and numpad
                           Stack(
                             children: [
-                              // Code label at top right
+                              // Code label at bottom right
                               Positioned(
-                                top: 15,
+                                bottom: 15,
                                 right: 15,
-                                child: const Text(
-                                  'کۆد = ١٢٣٤٥',
-                                  style: TextStyle(
+                                child: Text(
+                                  'کۆد = ${randomCode.split('').map((d) => kurdishDigits[d] ?? d).join()}',
+                                  style: const TextStyle(
                                     fontFamily: 'PeshangDes',
-                                    fontSize: 20,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
@@ -953,233 +994,106 @@ class _ComputerPracticeScreenState extends State<ComputerPracticeScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 20),
-            // Right side - Instructions and Mouse
+            // Bottom half - Instructions and Mouse (50% height, 100% width)
             Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10, bottom: 10, right: 10),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    // Instructions box with animation
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            offset: const Offset(0, 2),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: ScaleTransition(
-                              scale: animation,
-                              child: child,
+              child: GestureDetector(
+                onPanUpdate: (details) {
+                  _updateCursorPosition(details.delta);
+                  setState(() {
+                    joystickOffset = Offset(
+                      (joystickOffset.dx + details.delta.dx).clamp(-50, 50),
+                      (joystickOffset.dy + details.delta.dy).clamp(-50, 50),
+                    );
+                  });
+                },
+                onPanEnd: (details) {
+                  setState(() {
+                    joystickOffset = Offset.zero;
+                  });
+                },
+                onTap: _handleLeftClick,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      // Instructions box with animation
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              offset: const Offset(0, 2),
+                              blurRadius: 8,
                             ),
-                          );
-                        },
-                        child: Text(
-                          showLanguageSelection 
-                              ? 'سەرەتا بە بازنەکەی ناو ماوسەکە شوێنی ماوسەکە بجۆڵێنە و بیخەرە سەر زمانی دڵخوازت پاشان کلیکی چەپ داگرە'
-                              : showFinalEmptyScreen
-                                  ? 'ئەگەر لە کۆی ٢٥ پرسیار ٢٠ پرسیار یاخود زیاترت ڕاست بێت ڕاستەوخۆ پێت دەڵێت پیرۆزە دەرچوویت'
-                                  : showEmptyScreen
-                                      ? 'ماوسەکە بخەرە سەر وەڵامی ڕاست و کلیکی لای چەپ بکە ، ئاگادار بە بۆ هەر وەڵامێک ١ دەقەت هەیە وە کاتێک کلیکت کردە سەر وەڵامێک ڕاستەو خۆ دەچێتە پرسیاری دواتر'
-                                      : showUserName
-                                          ? 'ناوی سیانت دەنوسرێت وە پاشان بەردەوام دەبیت بە کلیکی جەپکردنە سەر تاقیکردنەوە'
-                                          : 'کۆدی سەر فۆرمەکەت بنووسە بە جوڵاندنی شوێنی ماوسەکە بۆ سەر ژماەرەکان وە کلیکی چەپیان لەسەر بکە پاشان کلیکی جەپ لە گەڕان بکە کۆد = ١٢٣٤٥',
-                          key: ValueKey<String>(
+                          ],
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: ScaleTransition(
+                                scale: animation,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Text(
                             showLanguageSelection 
-                                ? 'lang' 
+                                ? 'سەرەتا بە بازنەکەی ناو ماوسەکە شوێنی ماوسەکە بجۆڵێنە و بیخەرە سەر زمانی دڵخوازت پاشان کلیکی چەپ داگرە'
                                 : showFinalEmptyScreen
-                                    ? 'final'
+                                    ? 'ئەگەر لە کۆی ٢٥ پرسیار ٢٠ پرسیار یاخود زیاترت ڕاست بێت ڕاستەوخۆ پێت دەڵێت پیرۆزە دەرچوویت'
                                     : showEmptyScreen
-                                        ? 'quiz'
-                                        : showUserName 
-                                            ? 'name' 
-                                            : 'code'
-                          ),
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontFamily: 'PeshangDes',
-                            fontSize: 14,
-                            height: 1.5,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Exit button
-                    ElevatedButton(
-                      onPressed: () async {
-                        // Cancel timer first
-                        _timer?.cancel();
-                        // Pop to go back to previous screen
-                        if (context.mounted) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.arrow_back, color: Colors.white, size: 18),
-                          SizedBox(width: 8),
-                          Text(
-                            'دەرچوون لە راهێنان',
-                            style: TextStyle(
+                                        ? 'ماوسەکە بخەرە سەر وەڵامی ڕاست و کلیکی لای چەپ بکە ، ئاگادار بە بۆ هەر وەڵامێک ١ دەقەت هەیە وە کاتێک کلیکت کردە سەر وەڵامێک ڕاستەو خۆ دەچێتە پرسیاری دواتر'
+                                        : showUserName
+                                            ? 'ناوی سیانت دەنوسرێت وە پاشان بەردەوام دەبیت بە کلیکی جەپکردنە سەر تاقیکردنەوە'
+                                            : 'کۆدی سەر فۆرمەکەت بنووسە بە جوڵاندنی شوێنی ماوسەکە بۆ سەر ژماەرەکان وە کلیکی چەپیان لەسەر بکە پاشان کلیکی جەپ لە گەڕان بکە کۆد = ${randomCode.split('').map((d) => kurdishDigits[d] ?? d).join()}',
+                            key: ValueKey<String>(
+                              showLanguageSelection 
+                                  ? 'lang' 
+                                  : showFinalEmptyScreen
+                                      ? 'final'
+                                      : showEmptyScreen
+                                          ? 'quiz'
+                                          : showUserName 
+                                              ? 'name' 
+                                              : 'code'
+                            ),
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
                               fontFamily: 'PeshangDes',
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              fontSize: 18,
+                              height: 1.5,
+                              color: Colors.black87,
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-                    // Mouse illustration
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Mouse top with split buttons
-                          Container(
-                            width: 110,
-                            height: 65,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade400,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(55),
-                                topRight: Radius.circular(55),
-                              ),
-                              border: Border.all(color: Colors.black, width: 3),
-                            ),
-                            child: Row(
-                              children: [
-                                // Left click (left side)
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: _handleLeftClick,
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                          topRight: Radius.circular(52),
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          'کلیکی\nچەپ',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: 'PeshangDes',
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                            height: 1.2,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // Divider
-                                Container(
-                                  width: 3,
-                                  color: Colors.black,
-                                ),
-                                // Right click (right side)
-                                Expanded(
-                                  child: Container(
-                                    decoration: const BoxDecoration(
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(52),
-                                      ),
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        'کلیکی\nڕاست',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontFamily: 'PeshangDes',
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                          height: 1.2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                      const Spacer(),
+                      // Mouse illustration
+                      Align(
+                        alignment: Alignment.center,
+                        child: Transform.translate(
+                          offset: joystickOffset,
+                          child: Image.asset(
+                            'assets/images/mouse.png',
+                            width: 100,
+                            height: 130,
+                            fit: BoxFit.contain,
                           ),
-                          // Mouse bottom
-                          Container(
-                            width: 110,
-                            height: 82,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(55),
-                                bottomRight: Radius.circular(55),
-                              ),
-                              border: Border.all(color: Colors.black, width: 3),
-                            ),
-                            child: Center(
-                              child: GestureDetector(
-                                onPanUpdate: (details) {
-                                  _updateCursorPosition(details.delta);
-                                  setState(() {
-                                    joystickOffset = Offset(
-                                      (joystickOffset.dx + details.delta.dx).clamp(-15, 15),
-                                      (joystickOffset.dy + details.delta.dy).clamp(-15, 15),
-                                    );
-                                  });
-                                },
-                                onPanEnd: (details) {
-                                  setState(() {
-                                    joystickOffset = Offset.zero;
-                                  });
-                                },
-                                child: Transform.translate(
-                                  offset: joystickOffset,
-                                  child: Container(
-                                    width: 60,
-                                    height: 60,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade500,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                      const Spacer(),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
             ),

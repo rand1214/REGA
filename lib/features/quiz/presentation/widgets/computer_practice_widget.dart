@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../../computer_practice/presentation/screens/computer_practice_splash_screen.dart';
+import '../../../computer_practice/presentation/screens/computer_practice_screen.dart';
 
 class ComputerPracticeWidget extends StatelessWidget {
   const ComputerPracticeWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final descriptionFontSize = screenWidth < 375 ? 13.0 : (screenWidth < 400 ? 14.0 : 15.0);
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -69,7 +72,7 @@ class ComputerPracticeWidget extends StatelessWidget {
             textAlign: TextAlign.right,
             style: TextStyle(
               fontFamily: 'PeshangDes',
-              fontSize: 15,
+              fontSize: descriptionFontSize,
               height: 1.6,
               color: Colors.black.withValues(alpha: 0.7),
             ),
@@ -82,7 +85,7 @@ class ComputerPracticeWidget extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ComputerPracticeSplashScreen(),
+                    builder: (context) => const ComputerPracticeScreen(),
                   ),
                 );
               },

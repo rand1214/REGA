@@ -12,6 +12,9 @@ class Welcomer2Screen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final descriptionFontSize = screenWidth < 375 ? 16.0 : (screenWidth < 400 ? 18.0 : 20.0);
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF1F1F1),
       body: SafeArea(
@@ -96,7 +99,7 @@ class Welcomer2Screen extends StatelessWidget {
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               fontFamily: 'PeshangDes',
-                              fontSize: 20,
+                              fontSize: descriptionFontSize,
                               fontWeight: FontWeight.normal,
                               height: 1.6,
                               color: Colors.black.withValues(alpha: 0.7),
