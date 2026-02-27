@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'computer_practice_screen.dart';
+import '../computer_practice_screen.dart';
 
 class ComputerPracticeSplashScreen extends StatefulWidget {
   const ComputerPracticeSplashScreen({super.key});

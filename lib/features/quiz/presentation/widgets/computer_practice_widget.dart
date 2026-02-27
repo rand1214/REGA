@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../computer_practice/presentation/screens/computer_practice_screen.dart';
+import '../../../computer_practice/presentation/computer_practice_screen.dart';
 
 class ComputerPracticeWidget extends StatelessWidget {
   const ComputerPracticeWidget({super.key});
