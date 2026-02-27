@@ -1,12 +1,12 @@
 -- Insert all 12 chapters for REGA Quiz App
 -- Run this after creating the database schema
 -- Only Chapter 1 is free, all others require subscription
+-- Note: Run add_color_field_migration.sql after this to add colors
 
 INSERT INTO public.chapters (
   chapter_number, 
   title_kurdish, 
   title_english, 
-  color_hex, 
   is_free, 
   order_index, 
   description
@@ -16,7 +16,6 @@ INSERT INTO public.chapters (
   1, 
   'پێناسەکان', 
   'Definitions', 
-  '#B7D63E', 
   true, 
   1, 
   'ئەم بەشە باسی پێناسە گشتییەکان و زاراوەکانی هاتووچۆ دەکات'
@@ -27,7 +26,6 @@ INSERT INTO public.chapters (
   2, 
   'بنەما گشتییەکان', 
   'General Principles', 
-  '#F15A3C', 
   false, 
   2, 
   'ئەم بەشە باسی بنەما گشتییەکانی لێخوڕین و یاساکانی سەر ڕێگا دەکات'
@@ -38,7 +36,6 @@ INSERT INTO public.chapters (
   3, 
   'یاسای هاتووچۆ', 
   'Traffic Law', 
-  '#2FA7DF', 
   false, 
   3, 
   'ئەم بەشە باسی یاساکانی هاتووچۆ و ڕێساکانی سەر ڕێگا دەکات'
@@ -49,7 +46,6 @@ INSERT INTO public.chapters (
   4, 
   'هێما و کەرەستەکانی هاتووچۆ', 
   'Traffic Signs and Equipment', 
-  '#2F6EBB', 
   false, 
   4, 
   'ئەم بەشە باسی هێماکانی هاتووچۆ و کەرەستەکانی ڕێگا دەکات'
@@ -60,7 +56,6 @@ INSERT INTO public.chapters (
   5, 
   'بەشەکانی ئۆتۆمبێل', 
   'Car Parts', 
-  '#F4A640', 
   false, 
   5, 
   'ئەم بەشە باسی بەشەکانی ئۆتۆمبێل و کارکردنیان دەکات'
@@ -71,7 +66,6 @@ INSERT INTO public.chapters (
   6, 
   'خۆ ئامادەکردن بۆ لێخوڕین', 
   'Preparing to Drive', 
-  '#E91E63', 
   false, 
   6, 
   'ئەم بەشە باسی خۆ ئامادەکردن بۆ لێخوڕین و پشکنینی ئۆتۆمبێل دەکات'
@@ -82,7 +76,6 @@ INSERT INTO public.chapters (
   7, 
   'مانۆرکردن', 
   'Maneuvering', 
-  '#FF2C92', 
   false, 
   7, 
   'ئەم بەشە باسی مانۆرکردن و جوڵەکانی ئۆتۆمبێل دەکات'
@@ -93,7 +86,6 @@ INSERT INTO public.chapters (
   8, 
   'بارودۆخی سەر ڕێگاکان', 
   'Road Conditions', 
-  '#F3C21F', 
   false, 
   8, 
   'ئەم بەشە باسی بارودۆخی جۆراوجۆری سەر ڕێگاکان دەکات'
@@ -104,7 +96,6 @@ INSERT INTO public.chapters (
   9, 
   'هەلسەنگاندنی مەترسییەکان', 
   'Risk Assessment', 
-  '#7B3FA0', 
   false, 
   9, 
   'ئەم بەشە باسی هەلسەنگاندنی مەترسییەکان و چۆنیەتی دوورکەوتنەوەیان دەکات'
@@ -115,7 +106,6 @@ INSERT INTO public.chapters (
   10, 
   'تەندروستی شوفێر', 
   'Driver Health', 
-  '#20C6C2', 
   false, 
   10, 
   'ئەم بەشە باسی تەندروستی شوفێر، کاریگەری ماندووبوون و مادە هۆشبەر دەکات'
@@ -126,7 +116,6 @@ INSERT INTO public.chapters (
   11, 
   'لێخوڕینی ژینگەپارێزان', 
   'Eco-Driving', 
-  '#3FB34F', 
   false, 
   11, 
   'ئەم بەشە باسی شێوازی لێخوڕینی ژینگەپارێز، کەمکردنەوەی سوتەمەنی و پاراستنی هەوا دەکات'
@@ -137,13 +126,14 @@ INSERT INTO public.chapters (
   12, 
   'فریاگوزاری سەرەتایی', 
   'First Aid', 
-  '#E53935', 
   false, 
   12, 
   'ئەم بەشە باسی فریاگوزاری سەرەتایی، یارمەتیدانی بریندار و چارەسەری کاتی ڕووداو دەکات'
 );
 
 -- Verify the insert
-SELECT chapter_number, title_kurdish, title_english, color_hex, is_free 
+SELECT chapter_number, title_kurdish, title_english, is_free 
 FROM public.chapters 
 ORDER BY order_index;
+
+-- Next step: Run add_color_field_migration.sql to add colors

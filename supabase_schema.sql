@@ -45,7 +45,6 @@ CREATE TABLE public.chapters (
   title_kurdish TEXT NOT NULL,
   title_english TEXT,
   description TEXT,
-  color_hex TEXT NOT NULL, -- Hex color code for chapter
   is_free BOOLEAN DEFAULT false,
   order_index INTEGER NOT NULL,
   icon_url TEXT,
@@ -423,19 +422,10 @@ CREATE INDEX idx_payment_transactions_status ON public.payment_transactions(stat
 -- SAMPLE DATA (Optional - for testing)
 -- ============================================
 
--- Insert all 12 chapters with real names and colors
-INSERT INTO public.chapters (chapter_number, title_kurdish, title_english, color_hex, is_free, order_index, description) VALUES
-(1, 'پێناسەکان', 'Definitions', '#B7D63E', true, 1, 'ئەم بەشە باسی پێناسە گشتییەکان و زاراوەکانی هاتووچۆ دەکات'),
-(2, 'بنەما گشتییەکان', 'General Principles', '#F15A3C', false, 2, 'ئەم بەشە باسی بنەما گشتییەکانی لێخوڕین و یاساکانی سەر ڕێگا دەکات'),
-(3, 'یاسای هاتووچۆ', 'Traffic Law', '#2FA7DF', false, 3, 'ئەم بەشە باسی یاساکانی هاتووچۆ و ڕێساکانی سەر ڕێگا دەکات'),
-(4, 'هێما و کەرەستەکانی هاتووچۆ', 'Traffic Signs and Equipment', '#2F6EBB', false, 4, 'ئەم بەشە باسی هێماکانی هاتووچۆ و کەرەستەکانی ڕێگا دەکات'),
-(5, 'بەشەکانی ئۆتۆمبێل', 'Car Parts', '#F4A640', false, 5, 'ئەم بەشە باسی بەشەکانی ئۆتۆمبێل و کارکردنیان دەکات'),
-(6, 'خۆ ئامادەکردن بۆ لێخوڕین', 'Preparing to Drive', '#E91E63', false, 6, 'ئەم بەشە باسی خۆ ئامادەکردن بۆ لێخوڕین و پشکنینی ئۆتۆمبێل دەکات'),
-(7, 'مانۆرکردن', 'Maneuvering', '#FF2C92', false, 7, 'ئەم بەشە باسی مانۆرکردن و جوڵەکانی ئۆتۆمبێل دەکات'),
-(8, 'بارودۆخی سەر ڕێگاکان', 'Road Conditions', '#F3C21F', false, 8, 'ئەم بەشە باسی بارودۆخی جۆراوجۆری سەر ڕێگاکان دەکات'),
-(9, 'هەلسەنگاندنی مەترسییەکان', 'Risk Assessment', '#7B3FA0', false, 9, 'ئەم بەشە باسی هەلسەنگاندنی مەترسییەکان و چۆنیەتی دوورکەوتنەوەیان دەکات'),
-(10, 'تەندروستی شوفێر', 'Driver Health', '#20C6C2', false, 10, 'ئەم بەشە باسی تەندروستی شوفێر، کاریگەری ماندووبوون و مادە هۆشبەر دەکات'),
-(11, 'لێخوڕینی ژینگەپارێزان', 'Eco-Driving', '#3FB34F', false, 11, 'ئەم بەشە باسی شێوازی لێخوڕینی ژینگەپارێز، کەمکردنەوەی سوتەمەنی و پاراستنی هەوا دەکات'),
-(12, 'فریاگوزاری سەرەتایی', 'First Aid', '#E53935', false, 12, 'ئەم بەشە باسی فریاگوزاری سەرەتایی، یارمەتیدانی بریندار و چارەسەری کاتی ڕووداو دەکات');
+-- Insert sample chapters
+INSERT INTO public.chapters (chapter_number, title_kurdish, title_english, is_free, order_index) VALUES
+(1, 'بەشی یەکەم', 'Chapter 1', true, 1),
+(2, 'بەشی دووەم', 'Chapter 2', true, 2),
+(3, 'بەشی سێیەم', 'Chapter 3', false, 3);
 
 -- Note: Add more sample data as needed for testing
