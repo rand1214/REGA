@@ -2,7 +2,7 @@
 -- Run this AFTER the initial schema has been created
 -- This adds the color field and updates all 12 chapters with their colors
 
--- Step 1: Add color_hex column to chapters table
+-- Step 1: Add color_hex column to chapters table (allow NULL initially)
 ALTER TABLE public.chapters 
 ADD COLUMN IF NOT EXISTS color_hex TEXT;
 
@@ -22,11 +22,16 @@ UPDATE public.chapters SET color_hex = '#20C6C2' WHERE chapter_number = 10;
 UPDATE public.chapters SET color_hex = '#3FB34F' WHERE chapter_number = 11;
 UPDATE public.chapters SET color_hex = '#E53935' WHERE chapter_number = 12;
 
--- Step 3: Make color_hex NOT NULL after updating existing data
+-- Step 3: Set default color for any chapters without color (safety measure)
+UPDATE public.chapters 
+SET color_hex = '#808080' 
+WHERE color_hex IS NULL;
+
+-- Step 4: Make color_hex NOT NULL after updating existing data
 ALTER TABLE public.chapters 
 ALTER COLUMN color_hex SET NOT NULL;
 
--- Step 4: Verify the migration
+-- Step 5: Verify the migration
 SELECT chapter_number, title_kurdish, color_hex, is_free 
 FROM public.chapters 
 ORDER BY order_index;
